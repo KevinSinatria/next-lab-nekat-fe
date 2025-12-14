@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import {
   Card,
@@ -26,6 +26,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username harus diisi."),
@@ -62,7 +63,7 @@ function BrandingSection({ insideCard = false }: { insideCard?: boolean }) {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, checkAuth } = useAuthStore();
   const [isOpenPassword, setIsOpenPassword] = useState(false);
 
   const form = useForm<LoginValues>({
@@ -82,6 +83,19 @@ export default function LoginPage() {
     await login(values);
     router.push("/dashboard");
   };
+
+  useEffect(() => {
+    const check = async () => {
+      const isValid = await checkAuth();
+
+      if (isValid) {
+        router.push("/dashboard");
+        toast.success("Selamat datang kembali!");
+      }
+    };
+
+    check();
+  }, []);
 
   return (
     <div className="min-h-screen w-full h-screen flex flex-col md:flex-row">
