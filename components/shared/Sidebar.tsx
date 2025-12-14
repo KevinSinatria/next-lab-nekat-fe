@@ -35,10 +35,10 @@ export default function Sidebar({
 
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/aktivitas", label: "Aktivitas Lab", icon: Activity },
-    { href: "/dashboard/kelas", label: "Data Kelas", icon: Book },
-    { href: "/dashboard/lab", label: "Data Lab", icon: FlaskConical },
-    { href: "/dashboard/kartu", label: "Data Kartu", icon: IdCard },
+    { href: "/dashboard/activities", label: "Aktivitas Lab", icon: Activity },
+    { href: "/dashboard/classes", label: "Data Kelas", icon: Book },
+    { href: "/dashboard/labs", label: "Data Lab", icon: FlaskConical },
+    { href: "/dashboard/cards", label: "Data Kartu", icon: IdCard },
   ];
 
   return (
