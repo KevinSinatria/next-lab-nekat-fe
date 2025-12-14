@@ -31,7 +31,7 @@ const monthlyStats = async () => {
 };
 
 const last30DayStats = async () => {
-  const res = await api.get("/Dashboard/last-30-day-stats");
+  const res = await api.get("/Dashboard/last-30-days-stats");
 
   return res.data;
 };

@@ -1,95 +1,178 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CONFIG } from '../lib/config';
+"use client";
+
+import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "@/store/useAuthStore";
+import Image from "next/image";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username harus diisi."),
+  password: z.string().min(1, "Password harus diisi."),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
+
+function BrandingSection({ insideCard = false }: { insideCard?: boolean }) {
+  return (
+    <div
+      className={`flex flex-col items-center text-center ${
+        insideCard
+          ? "bg-[#0f2540] text-white rounded-t-xl p-6"
+          : "bg-[#0f2540] text-white h-full justify-center px-6"
+      }`}
+    >
+      <Image
+        src="/img/smkn1katapang.webp"
+        alt="Logo"
+        width={120}
+        height={120}
+        className="mb-4"
+      />
+      <h1 className="text-2xl font-bold">SMKN 1 KATAPANG</h1>
+      <p className="text-sm opacity-80 mb-8">SMK bisa, SMK hebat</p>
+
+      <div className="bg-white/20 px-6 py-2 rounded-lg font-bold tracking-wider">
+        SISTEM AKSES LAB
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuthStore();
+  const [isOpenPassword, setIsOpenPassword] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-    try {
-      const response = await fetch(`${CONFIG.BASE_URL}/api/Auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = form;
 
-      const result = await response.json();
-
-      if (result.success) {
-        localStorage.setItem('authToken', result.data.token);
-        localStorage.setItem('userData', JSON.stringify(result.data));
-        router.push('/dashboard');
-      } else {
-        setError(result.message || "Login gagal.");
-      }
-    } catch (err) {
-      setError("Terjadi kesalahan koneksi.");
-    } finally {
-      setLoading(false);
-    }
+  const handleLogin = async (values: LoginValues) => {
+    await login(values);
+    router.push("/dashboard");
   };
 
   return (
-    <div className="flex h-screen w-full">
-      {/* Sisi Kiri - Biru Gelap */}
-      <div className="flex-1 bg-[#0f2540] text-white flex flex-col items-center justify-center text-center relative hidden md:flex">
-        <img src="/img/smk1katapang.png" alt="Logo" className="w-[100px] mb-4" />
-        <h1 className="text-2xl font-bold mb-1">SISTEM AKSES LAB</h1>
-        <p className="text-sm opacity-80">lab accessing system</p>
-        <div className="mt-12 bg-white/20 px-5 py-2 rounded-lg font-bold tracking-wider">
-          SISTEM AKSES LAB
-        </div>
+    <div className="min-h-screen w-full h-screen flex flex-col md:flex-row">
+      {/* LEFT SIDE (Hidden on Mobile) */}
+      <div className="hidden md:flex w-1/2 items-center justify-center bg-[#0f2540]">
+        <BrandingSection />
       </div>
 
-      {/* Sisi Kanan - Form */}
-      <div className="flex-1 bg-white flex items-center justify-center">
-        <div className="w-[80%] max-w-[400px] p-10 bg-white rounded-2xl shadow-xl">
-          <form onSubmit={handleLogin}>
-            <h2 className="text-sm font-semibold mb-2 text-gray-700">Username</h2>
-            <div className="relative mb-6">
-              <input 
-                type="text" 
-                className="w-full p-4 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#0f2540] outline-none text-sm transition"
-                placeholder="Masukan Username Anda"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-              <i className="fas fa-user absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            </div>
+      {/* RIGHT SIDE (FORM) */}
+      <div className="flex w-full md:w-1/2 items-center justify-center h-full bg-slate-50 px-4 py-8">
+        <Card className="w-full max-w-md py-0 md:py-8 shadow-md">
+          <div className="md:hidden">
+            <BrandingSection insideCard />
+          </div>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-left">Login</CardTitle>
+            <CardDescription className="text-left">
+              Masuk ke akun anda untuk mengakses sistem.
+            </CardDescription>
+          </CardHeader>
 
-            <h2 className="text-sm font-semibold mb-2 text-gray-700">Password</h2>
-            <div className="relative mb-6">
-              <input 
-                type="password" 
-                className="w-full p-4 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#0f2540] outline-none text-sm transition"
-                placeholder="Masukan Password Anda"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <i className="fas fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            </div>
+          <CardContent className="pb-8 md:pb-0">
+            <Form {...form}>
+              <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
+                {/* USERNAME */}
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Masukkan username..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full p-4 bg-[#0f2540] text-white font-bold rounded-xl hover:bg-[#1a3a5e] transition disabled:opacity-70"
-            >
-              {loading ? 'LOADING...' : 'LOGIN'}
-            </button>
-          </form>
-          {error && <p className="text-red-500 text-xs mt-4 text-center">{error}</p>}
-        </div>
+                {/* PASSWORD */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={isOpenPassword ? "text" : "password"}
+                            placeholder="Masukkan password..."
+                            {...field}
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => setIsOpenPassword(!isOpenPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {isOpenPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* BUTTON */}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <Spinner />
+                      <span>Loading...</span>
+                    </div>
+                  ) : (
+                    "LOGIN"
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
