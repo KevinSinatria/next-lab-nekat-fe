@@ -7,6 +7,7 @@ import {
   FlaskConical,
   IdCard,
   LayoutDashboard,
+  Users,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -39,6 +40,7 @@ export default function Sidebar({
     { href: "/dashboard/classes", label: "Data Kelas", icon: Book },
     { href: "/dashboard/labs", label: "Data Lab", icon: FlaskConical },
     { href: "/dashboard/cards", label: "Data Kartu", icon: IdCard },
+    { href: "/dashboard/users", label: "Data User", icon: Users },
   ];
 
   return (

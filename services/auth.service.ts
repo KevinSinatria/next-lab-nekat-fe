@@ -29,8 +29,15 @@ const changePassword = async (changePasswordPayload: ChangePasswordPayload) => {
   return res.data;
 };
 
+const getRoles = async () => {
+  const res = await api.get("/Auth/roles");
+
+  return res.data;
+};
+
 export const authService = {
   login,
   getProfile,
   changePassword,
+  getRoles,
 };

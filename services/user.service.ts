@@ -1,9 +1,8 @@
 import { api } from "@/lib/api";
-import { use } from "react";
 
 type UserPayload = {
     username: string;
-    password: string;
+    password?: string;
     role: string
 }
 
@@ -31,6 +30,13 @@ const getById = async (id: string) => {
   return res.data;
 };
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Delete a user by id
+ * @param {string} id - The id of the user to delete
+ * @returns {Promise<any>} - The response of the delete request
+ */
+/*******  ea363905-b9d7-4455-a6cf-b94e16ceb596  *******/
 const deleteById = async (id: string) => {
   const res = await api.delete(`/User/${id}`);
 
