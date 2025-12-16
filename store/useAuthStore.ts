@@ -14,7 +14,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  login: (user: LoginPayload) => Promise<void>;
+  login: (user: LoginPayload) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
 }
@@ -26,7 +26,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (data) => {
     try {
-      toast.loading("Loading...", { id: "login" });
       const res = await authService.login(data);
 
       localStorage.setItem("authToken", res.data.token);
@@ -35,7 +34,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+
       toast.success("Login berhasil!");
+
+      return true;
     } catch (err) {
       if (err instanceof AxiosError) {
         toast.error(
@@ -47,9 +49,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       }
 
-      toast.error("Terjadi kesalahan saat login!");
-    } finally {
-      toast.dismiss("login");
+      console.error(err);
+      return false;
     }
   },
   logout: async () => {

@@ -2,7 +2,7 @@
 "use client";
 
 import { useLocalPagination } from "@/hooks/useLocalPagination";
-import { roomService } from "@/services/room.service";
+import { cardService } from "@/services/card.service";
 import {
   keepPreviousData,
   useMutation,
@@ -34,19 +34,19 @@ import {
 } from "@/components/ui/table";
 import { PaginationControls } from "@/components/shared/PaginationControls";
 import { Edit, List, Plus, Trash } from "lucide-react";
-import LabForm from "./_components/LabForm"; 
+import CardForm from "./_components/CardForm";
 
-export default function LabsPage() {
+export default function CardsPage() {
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedLab, setSelectedLab] = useState(null);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   const [filteredData, setFilteredData] = useState<any[]>([]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["labs"],
-    queryFn: () => roomService.getAll(),
+    queryKey: ["cards"],
+    queryFn: () => cardService.getAll(),
     placeholderData: keepPreviousData,
   });
 
@@ -63,7 +63,7 @@ export default function LabsPage() {
   const pagination = useLocalPagination({
     initialData: filteredData,
     itemsPerPage: 15,
-    searchKeys: ["nama"],
+    searchKeys: ["uid", "keterangan"],
   });
 
   const {
@@ -81,28 +81,28 @@ export default function LabsPage() {
   } = pagination;
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => roomService.deleteById(String(id)),
+    mutationFn: async (id: number) => cardService.deleteById(String(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["labs"] });
-      toast.success("Berhasil menghapus data lab!");
+      queryClient.invalidateQueries({ queryKey: ["cards"] });
+      toast.success("Berhasil menghapus data kartu!");
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
         toast.error(
           err.response?.data.message ||
-            "Terjadi kesalahan saat menghapus lab!"
+            "Terjadi kesalahan saat menghapus kartu!"
         );
       }
     },
   });
 
   const createHandler = () => {
-    setSelectedLab(null);
+    setSelectedCard(null);
     setIsModalOpen(true);
   };
 
-  const editHandler = (labData: any) => {
-    setSelectedLab(labData);
+  const editHandler = (cardData: any) => {
+    setSelectedCard(cardData);
     setIsModalOpen(true);
   };
 
@@ -114,7 +114,7 @@ export default function LabsPage() {
         <div className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <List />
-            Daftar Lab
+            Daftar Kartu
           </h3>
           <div className="flex gap-2">
             <Button
@@ -122,7 +122,7 @@ export default function LabsPage() {
               className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition flex items-center gap-2 shadow-sm"
             >
               <Plus />
-              Tambah Lab
+              Tambah Kartu
             </Button>
           </div>
         </div>
@@ -131,8 +131,14 @@ export default function LabsPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-16 text-center">NO</TableHead>
-              <TableHead>NAMA LAB</TableHead>
-              <TableHead className="text-center" colSpan={2}>AKSI</TableHead>
+              <TableHead>UID KARTU</TableHead>
+              <TableHead>STATUS</TableHead>
+              <TableHead>KETERANGAN</TableHead>
+              <TableHead>PEMILIK</TableHead>
+              <TableHead>KELAS</TableHead>
+              <TableHead className="text-center" colSpan={2}>
+                AKSI
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -140,7 +146,7 @@ export default function LabsPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={7}
                   className="py-10 text-center text-muted-foreground"
                 >
                   Memuat data...
@@ -149,7 +155,7 @@ export default function LabsPage() {
             ) : filteredData.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={7}
                   className="py-10 text-center text-muted-foreground"
                 >
                   Tidak ada data ditemukan
@@ -165,7 +171,27 @@ export default function LabsPage() {
                     {(currentPage - 1) * limit + idx + 1}
                   </TableCell>
 
-                  <TableCell>{item.nama}</TableCell>
+                  <TableCell className="font-mono font-bold text-red-500 text-xs md:text-sm">
+                    {item.uid}
+                  </TableCell>
+
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[80px] rounded-md px-3 py-1.5 text-xs font-bold text-white ${
+                        item.status === "AKTIF"
+                          ? "bg-emerald-500"
+                          : "bg-red-500"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </TableCell>
+
+                  <TableCell>{item.keterangan}</TableCell>
+
+                  <TableCell>{item.userUsername || "-"}</TableCell>
+
+                  <TableCell>{item.kelasNama || "-"}</TableCell>
 
                   <TableCell colSpan={2} className="text-center space-x-2">
                     <Button
@@ -218,10 +244,10 @@ export default function LabsPage() {
 
       <PaginationControls {...pagination} />
 
-      <LabForm
+      <CardForm
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        initialData={selectedLab}
+        initialData={selectedCard}
       />
     </div>
   );

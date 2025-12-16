@@ -80,8 +80,12 @@ export default function LoginPage() {
   } = form;
 
   const handleLogin = async (values: LoginValues) => {
-    await login(values);
-    router.push("/dashboard");
+    const result = await login(values);
+
+    if (result) {
+      router.push("/dashboard");
+      toast.success("Selamat datang kembali!");
+    }
   };
 
   useEffect(() => {
